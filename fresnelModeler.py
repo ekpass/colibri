@@ -51,7 +51,7 @@ def generatePoints(starR):
 
 def diffractionCalc(r, p, starR, lam, D, b):
 
-    """ Mathematically calculates intensity at a given distance from star centre """
+    """ Analytically calculates intensity at a given distance from star centre """
 
     # r is distance between line of sight and centre of the disk, in fresnel scale units
     # p is radius of KBO, in fresnel scale units
@@ -142,15 +142,17 @@ def integrateCurve(exposure, curve, totTime, shiftAdj):
 
     timePerFrame = totTime / len(curve)
     numFrames = roundOdd(exposure/timePerFrame)
+    if shiftAdj < 0:
+        shiftAdj += 1
     shift = ((len(curve) / 2)% numFrames) - (numFrames-1)/2
-    if shift < 0:
+    while shift < 0:
         shift += numFrames
     shift += int(numFrames*shiftAdj)
     for index in np.arange((numFrames-1)/2 + shift, len(curve)-(numFrames-1)/2, numFrames):
         indices = range(index - (numFrames-1)/2, index+1+(numFrames-1)/2)
         av = np.average(curve[indices])
         curve[indices] = av
-    last = indices[-1]+1  # bins leftovers if light curve length isn't divisible by exposure time
+    last = indices[-1]+1  # bins leftover if light curve length isn't divisible by exposure time
     curve[last:] = np.average(curve[last:])
     curve[:shift] = np.average(curve[:shift])
     return curve, numFrames
